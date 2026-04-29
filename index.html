@@ -195,17 +195,9 @@
       margin-bottom:16px;
     }
 
-    .field-label{
-      display:block;
-      margin:0 0 10px 4px;
-      color:var(--text);
-      font-weight:800;
-      font-size:1rem;
-    }
-
     .search-row{
       display:grid;
-      grid-template-columns:minmax(0,1fr) auto;
+      grid-template-columns:minmax(0,1fr);
       gap:12px;
       align-items:center;
     }
@@ -215,11 +207,27 @@
       align-items:center;
       gap:12px;
       min-height:66px;
-      padding:0 18px;
+      padding:0 18px 0 12px;
       border-radius:20px;
       background:linear-gradient(135deg, rgba(250,251,249,.48), rgba(224,228,220,.30));
       border:1px solid rgba(255,255,255,.5);
       box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
+    }
+
+    .search-wrap:focus-within{
+      border-color:rgba(185,222,58,.78);
+      box-shadow:0 10px 18px rgba(98,124,57,.10), inset 0 1px 0 rgba(255,255,255,.45);
+    }
+
+    .search-icon-btn{
+      border:0;
+      background:transparent;
+      padding:0;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      flex-shrink:0;
     }
 
     .search-icon{
@@ -235,6 +243,18 @@
       font-weight:900;
       flex-shrink:0;
       box-shadow:0 8px 18px rgba(106,196,90,.22);
+      transition:transform .18s ease, box-shadow .18s ease, filter .18s ease;
+    }
+
+    .search-icon-btn:hover .search-icon,
+    .search-icon-btn:focus-visible .search-icon{
+      transform:translateY(-1px) scale(1.02);
+      box-shadow:0 10px 20px rgba(106,196,90,.26);
+      filter:brightness(1.02);
+    }
+
+    .search-icon-btn:focus-visible{
+      outline:none;
     }
 
     .search-wrap input{
@@ -716,13 +736,13 @@
       </div>
 
       <section class="search-panel">
-        <label class="field-label" for="searchInput">Menu Pencarian</label>
         <div class="search-row">
-          <label class="search-wrap" for="searchInput">
-            <span class="search-icon">⌕</span>
+          <div class="search-wrap">
+            <button id="searchBtn" class="search-icon-btn" type="button" aria-label="Cari agenda">
+              <span class="search-icon">⌕</span>
+            </button>
             <input id="searchInput" type="search" placeholder="kolom pencarian">
-          </label>
-          <button id="resetSearchBtn" class="ghost-btn" type="button">Reset</button>
+          </div>
         </div>
       </section>
 
@@ -860,7 +880,7 @@
       agendaList: document.getElementById("agendaList"),
       agendaCardTemplate: document.getElementById("agendaCardTemplate"),
       searchInput: document.getElementById("searchInput"),
-      resetSearchBtn: document.getElementById("resetSearchBtn"),
+      searchBtn: document.getElementById("searchBtn"),
       prevMonthBtn: document.getElementById("prevMonthBtn"),
       nextMonthBtn: document.getElementById("nextMonthBtn"),
       todayBtn: document.getElementById("todayBtn"),
@@ -1293,15 +1313,25 @@
     }
 
     function attachEvents() {
-      elements.searchInput.addEventListener("input", event => {
-        state.searchTerm = event.target.value;
+      const runSearch = () => {
+        state.searchTerm = elements.searchInput.value;
         applySearch();
+      };
+
+      elements.searchBtn.addEventListener("click", runSearch);
+
+      elements.searchInput.addEventListener("keydown", event => {
+        if (event.key === "Enter") {
+          event.preventDefault();
+          runSearch();
+        }
       });
 
-      elements.resetSearchBtn.addEventListener("click", () => {
-        state.searchTerm = "";
-        elements.searchInput.value = "";
-        applySearch();
+      elements.searchInput.addEventListener("input", event => {
+        if (!event.target.value.trim()) {
+          state.searchTerm = "";
+          applySearch();
+        }
       });
 
       elements.prevMonthBtn.addEventListener("click", async () => {
