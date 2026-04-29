@@ -6,657 +6,755 @@
   <title>Agenda Kegiatan Mahasiswa</title>
   <meta name="description" content="Kalender agenda kegiatan mahasiswa berbasis Google Spreadsheet untuk GitHub Pages.">
   <style>
-    :root {
-      --bg: #f3f6fb;
-      --panel: rgba(255,255,255,0.94);
-      --panel-border: rgba(148,163,184,0.18);
-      --text: #0f172a;
-      --muted: #475569;
-      --soft: #94a3b8;
-      --primary: #2563eb;
-      --primary-soft: rgba(37,99,235,0.12);
-      --holiday: #dc2626;
-      --holiday-soft: rgba(220,38,38,0.11);
-      --agenda: #0f766e;
-      --agenda-soft: rgba(15,118,110,0.14);
-      --today: #7c3aed;
-      --today-soft: rgba(124,58,237,0.12);
-      --shadow: 0 20px 50px rgba(15,23,42,0.08);
-      --radius-xl: 24px;
-      --radius-lg: 18px;
-      --radius-md: 14px;
-      --radius-sm: 12px;
-      --maxw: 1220px;
+    :root{
+      --bg1:#b9c4b0;
+      --bg2:#d7dcd4;
+      --bg3:#8ea17d;
+      --card:rgba(235,238,232,0.55);
+      --card-strong:rgba(245,247,242,0.72);
+      --line:rgba(255,255,255,0.55);
+      --line-soft:rgba(255,255,255,0.28);
+      --text:#2f3a2d;
+      --muted:#495246;
+      --soft:#7c8378;
+      --primary:#b9de3a;
+      --primary-deep:#69c45a;
+      --danger:#e65151;
+      --danger-soft:rgba(230,81,81,0.12);
+      --shadow:0 18px 40px rgba(62,74,55,0.16);
+      --radius-xl:34px;
+      --radius-lg:24px;
+      --radius-md:18px;
+      --radius-sm:14px;
+      --font:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      color: var(--text);
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family:var(--font);
+      color:var(--text);
       background:
-        radial-gradient(circle at top left, rgba(37,99,235,0.08), transparent 26%),
-        radial-gradient(circle at top right, rgba(124,58,237,0.08), transparent 24%),
-        var(--bg);
+        radial-gradient(circle at 12% 18%, rgba(255,255,255,0.65), transparent 22%),
+        radial-gradient(circle at 82% 22%, rgba(183,204,149,0.5), transparent 18%),
+        radial-gradient(circle at 28% 80%, rgba(255,255,255,0.38), transparent 20%),
+        linear-gradient(135deg, var(--bg1), var(--bg2) 42%, #c8d0c1 70%, var(--bg3));
+      overflow-x:hidden;
     }
 
-    button, input { font: inherit; }
-    a { color: inherit; }
-
-    .page-shell {
-      width: min(var(--maxw), calc(100% - 28px));
-      margin: 24px auto 38px;
+    body::before,
+    body::after{
+      content:"";
+      position:fixed;
+      inset:auto;
+      border-radius:999px;
+      filter:blur(85px);
+      opacity:.38;
+      pointer-events:none;
+      z-index:0;
+    }
+    body::before{
+      width:320px;height:320px;
+      left:-60px;top:120px;
+      background:rgba(120,163,88,.65);
+    }
+    body::after{
+      width:360px;height:360px;
+      right:-80px;top:40px;
+      background:rgba(255,255,255,.55);
     }
 
-    .hero, .panel {
-      background: var(--panel);
-      border: 1px solid var(--panel-border);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
+    button,input{font:inherit}
+    a{color:inherit}
+    .hidden{display:none !important}
+
+    .page-shell{
+      position:relative;
+      z-index:1;
+      width:min(780px, calc(100% - 24px));
+      margin:18px auto 34px;
+      padding:16px;
     }
 
-    .hero {
-      border-radius: var(--radius-xl);
-      padding: 28px;
-      display: grid;
-      grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.95fr);
-      gap: 18px;
-      margin-bottom: 20px;
+    .page-shell::before,
+    .page-shell::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:40px;
+      background:rgba(240,243,237,0.26);
+      border:1px solid rgba(255,255,255,0.32);
+      backdrop-filter:blur(12px);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.35);
+      pointer-events:none;
+    }
+    .page-shell::before{transform:translate(10px,10px); opacity:.6}
+    .page-shell::after{transform:translate(20px,20px); opacity:.32}
+
+    .app-card{
+      position:relative;
+      border-radius:38px;
+      background:linear-gradient(135deg, rgba(235,239,232,.78), rgba(217,223,212,.60));
+      border:1px solid rgba(255,255,255,.5);
+      backdrop-filter:blur(22px);
+      box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.42);
+      padding:28px 20px 22px;
     }
 
-    .eyebrow {
-      margin: 0 0 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.14em;
-      font-size: 0.76rem;
-      font-weight: 800;
-      color: var(--primary);
+    .app-header{
+      text-align:center;
+      padding:2px 10px 18px;
     }
 
-    .hero h1 {
-      margin: 0;
-      font-size: clamp(1.8rem, 3vw, 3rem);
-      line-height: 1.08;
+    .eyebrow{
+      margin:0 0 8px;
+      font-size:.78rem;
+      letter-spacing:.16em;
+      font-weight:800;
+      text-transform:uppercase;
+      color:#4c5c47;
     }
 
-    .hero-text {
-      margin: 12px 0 0;
-      color: var(--muted);
-      line-height: 1.7;
-      max-width: 760px;
+    .app-header h1{
+      margin:0;
+      font-size:clamp(2rem, 5vw, 3rem);
+      line-height:1.05;
+      letter-spacing:.02em;
+      font-weight:900;
+      color:#2f3a2d;
+      text-transform:uppercase;
     }
 
-    .hero-stats {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
+    .subtitle{
+      margin:10px 0 0;
+      font-size:1rem;
+      color:var(--muted);
+      line-height:1.6;
     }
 
-    .stat-card {
-      background: linear-gradient(145deg, rgba(255,255,255,0.88), rgba(241,245,249,0.96));
-      border: 1px solid rgba(148,163,184,0.18);
-      border-radius: var(--radius-lg);
-      padding: 16px 18px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 108px;
+    .stats-strip{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:12px;
+      margin-top:18px;
     }
 
-    .stat-label {
-      color: var(--muted);
-      font-size: 0.92rem;
+    .stat-chip{
+      background:linear-gradient(135deg, rgba(246,248,244,.7), rgba(225,230,221,.55));
+      border:1px solid rgba(255,255,255,.48);
+      border-radius:18px;
+      padding:12px 14px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.4);
     }
 
-    .stat-card strong {
-      font-size: 1.52rem;
-      line-height: 1.15;
-      margin-top: 10px;
+    .stat-chip span{
+      display:block;
+      font-size:.82rem;
+      color:var(--muted);
+      margin-bottom:6px;
+      font-weight:700;
     }
 
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1.12fr) minmax(0, 0.88fr);
-      gap: 20px;
-      align-items: start;
+    .stat-chip strong{
+      display:block;
+      font-size:1.05rem;
+      line-height:1.35;
+      color:var(--text);
     }
 
-    .panel {
-      border-radius: var(--radius-xl);
-      padding: 22px;
+    .config-tip{
+      margin:0 4px 14px;
+      padding:12px 14px;
+      border-radius:18px;
+      background:rgba(255,255,255,.26);
+      border:1px dashed rgba(255,255,255,.48);
+      color:var(--muted);
+      line-height:1.6;
+      font-size:.92rem;
+    }
+    .config-tip code{
+      background:rgba(47,58,45,.08);
+      padding:2px 6px;
+      border-radius:8px;
     }
 
-    .toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
+    .search-panel,
+    .calendar-panel,
+    .detail-panel{
+      background:linear-gradient(135deg, rgba(241,243,239,.62), rgba(223,228,219,.48));
+      border:1px solid rgba(255,255,255,.48);
+      border-radius:26px;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+      backdrop-filter:blur(16px);
     }
 
-    .toolbar-top { margin-bottom: 18px; }
-
-    .search-wrap {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      height: 54px;
-      padding: 0 14px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.22);
-      background: #fff;
+    .search-panel{
+      padding:18px;
+      margin-bottom:16px;
     }
 
-    .search-icon {
-      color: var(--soft);
-      font-size: 1.1rem;
-      line-height: 1;
+    .field-label{
+      display:block;
+      margin:0 0 10px 4px;
+      color:var(--text);
+      font-weight:800;
+      font-size:1rem;
     }
 
-    .search-wrap input {
-      flex: 1;
-      min-width: 0;
-      border: 0;
-      outline: 0;
-      background: transparent;
-      color: var(--text);
+    .search-row{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) auto;
+      gap:12px;
+      align-items:center;
     }
 
-    .ghost-btn, .secondary-btn, .nav-btn {
-      border: 0;
-      border-radius: 999px;
-      background: #fff;
-      color: var(--text);
-      cursor: pointer;
-      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-      box-shadow: inset 0 0 0 1px rgba(148,163,184,0.22);
+    .search-wrap{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-height:66px;
+      padding:0 18px;
+      border-radius:20px;
+      background:linear-gradient(135deg, rgba(250,251,249,.48), rgba(224,228,220,.30));
+      border:1px solid rgba(255,255,255,.5);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.45);
     }
 
-    .ghost-btn, .secondary-btn { padding: 12px 18px; }
-    .nav-btn { width: 44px; height: 44px; font-size: 1.55rem; }
-
-    .ghost-btn:hover, .secondary-btn:hover, .nav-btn:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 22px rgba(15,23,42,0.09);
+    .search-icon{
+      width:38px;
+      height:38px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, rgba(106,196,90,.88), rgba(186,222,58,.82));
+      color:#20351b;
+      font-size:1.05rem;
+      font-weight:900;
+      flex-shrink:0;
+      box-shadow:0 8px 18px rgba(106,196,90,.22);
     }
 
-    .calendar-nav { margin-bottom: 16px; }
-    .calendar-title-wrap { flex: 1; text-align: center; }
-    .calendar-title-wrap h2 { margin: 0; font-size: 1.5rem; }
-    .calendar-title-wrap p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 0.95rem;
-      line-height: 1.45;
+    .search-wrap input{
+      width:100%;
+      border:0;
+      outline:0;
+      background:transparent;
+      color:var(--text);
+      font-size:1.1rem;
+      font-weight:700;
+    }
+    .search-wrap input::placeholder{color:#5f685d; font-weight:700}
+
+    .ghost-btn,
+    .secondary-btn,
+    .nav-btn{
+      border:1px solid rgba(255,255,255,.48);
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(246,248,245,.62), rgba(223,228,219,.4));
+      color:var(--text);
+      cursor:pointer;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease;
+      font-weight:800;
     }
 
-    .calendar-nav-actions { display: flex; gap: 10px; align-items: center; }
-
-    .legend {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      color: var(--muted);
-      font-size: 0.92rem;
-      margin-bottom: 16px;
-    }
-    .legend span { display: inline-flex; align-items: center; gap: 8px; }
-    .legend-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 999px;
-      display: inline-block;
-    }
-    .today-dot { background: var(--today); }
-    .agenda-dot { background: var(--agenda); }
-    .holiday-dot { background: var(--holiday); }
-
-    .config-tip {
-      margin: 0 0 18px;
-      padding: 14px 16px;
-      border-radius: var(--radius-md);
-      background: rgba(255,255,255,0.66);
-      border: 1px dashed rgba(148,163,184,0.36);
-      color: var(--muted);
-      line-height: 1.65;
-      font-size: 0.94rem;
-    }
-    .config-tip code {
-      background: rgba(15,23,42,0.06);
-      padding: 2px 6px;
-      border-radius: 8px;
-      color: var(--text);
+    .ghost-btn,
+    .secondary-btn{
+      min-height:66px;
+      padding:0 18px;
     }
 
-    .calendar-head, .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 10px;
+    .nav-btn{
+      min-height:54px;
+      min-width:92px;
+      padding:0 14px;
+      font-size:1.2rem;
     }
 
-    .calendar-head { margin-bottom: 10px; }
-    .calendar-head div {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.88rem;
-      font-weight: 700;
-      padding: 8px 4px;
+    .secondary-btn{
+      background:linear-gradient(135deg, rgba(186,222,58,.42), rgba(106,196,90,.24));
     }
 
-    .calendar-cell {
-      min-height: 126px;
-      border: 1px solid rgba(148,163,184,0.16);
-      border-radius: 18px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
-      text-align: left;
-      padding: 12px;
-      position: relative;
-      cursor: pointer;
-      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
-      overflow: hidden;
+    .ghost-btn:hover,
+    .secondary-btn:hover,
+    .nav-btn:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 18px rgba(62,74,55,.12), inset 0 1px 0 rgba(255,255,255,.42);
     }
 
-    .calendar-cell:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 14px 26px rgba(15,23,42,0.07);
-      border-color: rgba(37,99,235,0.22);
+    .calendar-panel{
+      padding:14px;
+      margin-bottom:16px;
     }
 
-    .calendar-cell.outside-month {
-      opacity: .56;
-      background: rgba(248,250,252,0.86);
+    .month-card{
+      padding:14px;
+      border-radius:24px;
+      background:linear-gradient(135deg, rgba(244,246,241,.52), rgba(221,227,217,.34));
+      border:1px solid rgba(255,255,255,.45);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
     }
 
-    .calendar-cell.today {
-      border-color: rgba(124,58,237,0.3);
-      box-shadow: inset 0 0 0 1px rgba(124,58,237,0.2);
+    .month-head{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      margin-bottom:14px;
     }
 
-    .calendar-cell.selected {
-      border-color: rgba(37,99,235,0.36);
-      box-shadow: inset 0 0 0 1px rgba(37,99,235,0.22), 0 16px 32px rgba(37,99,235,0.08);
+    .month-icon{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, rgba(106,196,90,.96), rgba(186,222,58,.86));
+      box-shadow:0 10px 18px rgba(106,196,90,.24);
+      font-size:1.25rem;
     }
 
-    .calendar-cell.holiday,
-    .calendar-cell.sunday {
-      background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(254,242,242,0.95));
+    .month-title-wrap h2{
+      margin:0;
+      font-size:1.95rem;
+      line-height:1.1;
+      color:var(--text);
+      font-weight:900;
     }
 
-    .calendar-day-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 10px;
-      margin-bottom: 8px;
+    .month-title-wrap p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.55;
+      font-size:.96rem;
     }
 
-    .calendar-day-number {
-      width: 34px;
-      height: 34px;
-      border-radius: 999px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1rem;
-      font-weight: 800;
-      line-height: 1;
-      color: var(--text);
-      background: rgba(15,23,42,0.04);
+    .month-controls{
+      display:grid;
+      grid-template-columns:88px minmax(0,1fr) 88px;
+      gap:10px;
+      margin-bottom:12px;
     }
 
-    .calendar-cell.today .calendar-day-number {
-      background: var(--today);
-      color: #fff;
-      box-shadow: 0 10px 20px rgba(124,58,237,0.18);
+    .legend{
+      display:flex;
+      gap:14px;
+      flex-wrap:wrap;
+      align-items:center;
+      font-size:.86rem;
+      color:var(--muted);
+      margin:0 4px 14px;
+    }
+    .legend span{display:inline-flex; align-items:center; gap:8px}
+    .legend-dot{
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      display:inline-block;
+      box-shadow:0 0 0 4px rgba(255,255,255,.18);
+    }
+    .today-dot{background:var(--primary)}
+    .agenda-dot{background:var(--primary-deep)}
+    .holiday-dot{background:var(--danger)}
+
+    .calendar-head{
+      display:grid;
+      grid-template-columns:repeat(7, minmax(0,1fr));
+      gap:8px;
+      margin-bottom:8px;
+      padding:0 2px;
+    }
+    .calendar-head div{
+      text-align:center;
+      padding:8px 2px;
+      font-size:.98rem;
+      font-weight:800;
+      color:#2f3a2d;
+    }
+    .calendar-head div:last-child{color:var(--danger)}
+
+    .calendar-grid{
+      display:grid;
+      grid-template-columns:repeat(7, minmax(0,1fr));
+      gap:8px;
+    }
+
+    .calendar-cell{
+      min-height:78px;
+      border:1px solid rgba(255,255,255,.42);
+      border-radius:16px;
+      background:linear-gradient(135deg, rgba(249,250,248,.4), rgba(224,229,220,.22));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+      position:relative;
+      padding:10px 8px 20px;
+      cursor:pointer;
+      overflow:hidden;
+      transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+
+    .calendar-cell:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 16px rgba(62,74,55,.10), inset 0 1px 0 rgba(255,255,255,.42);
+    }
+
+    .calendar-cell.outside-month{
+      opacity:.42;
+    }
+
+    .calendar-cell.selected{
+      border-color:rgba(185,222,58,.95);
+      box-shadow:0 12px 22px rgba(98,124,57,.12), inset 0 0 0 1px rgba(185,222,58,.65);
+    }
+
+    .calendar-cell.today .calendar-day-number{
+      border:2px solid rgba(185,222,58,.95);
+      background:rgba(255,255,255,.26);
+    }
+
+    .calendar-cell.selected .calendar-day-number{
+      border:2px solid rgba(185,222,58,.95);
+      background:rgba(185,222,58,.18);
     }
 
     .calendar-cell.holiday .calendar-day-number,
-    .calendar-cell.sunday .calendar-day-number {
-      color: var(--holiday);
-      background: var(--holiday-soft);
+    .calendar-cell.sunday .calendar-day-number{
+      color:var(--danger);
     }
 
-    .calendar-cell.selected .calendar-day-number {
-      background: var(--primary);
-      color: #fff;
+    .calendar-day-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:flex-start;
+      margin-bottom:0;
     }
 
-    .day-flags {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-      gap: 6px;
+    .calendar-day-number{
+      width:34px;
+      height:34px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:999px;
+      border:2px solid transparent;
+      color:var(--text);
+      font-weight:900;
+      font-size:1.08rem;
+      line-height:1;
+      margin:0 auto;
     }
 
-    .flag {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      border-radius: 999px;
-      padding: 4px 8px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      line-height: 1;
-      white-space: nowrap;
+    .day-flags,
+    .calendar-holiday-name,
+    .calendar-agenda-preview{
+      display:none !important;
     }
 
-    .flag-today { color: var(--today); background: var(--today-soft); }
-    .flag-holiday { color: var(--holiday); background: var(--holiday-soft); }
-    .flag-agenda { color: var(--agenda); background: var(--agenda-soft); }
-
-    .calendar-holiday-name {
-      color: var(--holiday);
-      font-size: 0.8rem;
-      font-weight: 700;
-      line-height: 1.35;
-      min-height: 18px;
-      margin-bottom: 7px;
+    .agenda-markers{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:7px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:6px;
     }
 
-    .calendar-agenda-preview {
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 3;
-      overflow: hidden;
-      color: var(--text);
-      font-size: 0.86rem;
-      line-height: 1.45;
-      font-weight: 600;
-      margin-bottom: 8px;
+    .marker-dot{
+      width:5px;
+      height:5px;
+      border-radius:999px;
+      background:var(--primary-deep);
+      box-shadow:none;
     }
 
-    .agenda-markers {
-      position: absolute;
-      left: 12px;
-      right: 12px;
-      bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      flex-wrap: wrap;
+    .marker-text{
+      display:none;
     }
 
-    .marker-dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 999px;
-      background: var(--agenda);
-      box-shadow: 0 0 0 5px rgba(15,118,110,0.08);
+    .calendar-cell.holiday .agenda-markers .marker-dot,
+    .calendar-cell.sunday .agenda-markers .marker-dot{
+      background:var(--danger);
     }
 
-    .marker-text {
-      color: var(--agenda);
-      font-size: 0.8rem;
-      font-weight: 700;
+    .detail-panel{
+      padding:18px;
     }
 
-    .detail-header {
-      display: flex;
-      justify-content: space-between;
-      gap: 14px;
-      align-items: flex-start;
-      margin-bottom: 16px;
-    }
-    .detail-header h2 {
-      margin: 0;
-      font-size: 1.38rem;
-      line-height: 1.28;
-    }
-    .detail-header p {
-      margin: 7px 0 0;
-      color: var(--muted);
-      line-height: 1.5;
+    .detail-header{
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+      margin-bottom:14px;
     }
 
-    .selected-badge {
-      flex-shrink: 0;
-      border-radius: 999px;
-      padding: 10px 14px;
-      background: var(--primary-soft);
-      color: var(--primary);
-      font-weight: 800;
-      white-space: nowrap;
+    .detail-header h2{
+      margin:0;
+      font-size:1.42rem;
+      line-height:1.3;
     }
 
-    .holiday-banner {
-      margin-bottom: 14px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      background: var(--holiday-soft);
-      color: var(--holiday);
-      line-height: 1.6;
-      font-size: 0.95rem;
+    .detail-header p{
+      margin:6px 0 0;
+      color:var(--muted);
+      line-height:1.6;
     }
 
-    .agenda-list {
-      display: grid;
-      gap: 14px;
+    .selected-badge{
+      flex-shrink:0;
+      background:linear-gradient(135deg, rgba(186,222,58,.42), rgba(106,196,90,.22));
+      border:1px solid rgba(255,255,255,.45);
+      border-radius:999px;
+      padding:10px 14px;
+      font-weight:900;
+      color:var(--text);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+      white-space:nowrap;
     }
 
-    .agenda-card {
-      border-radius: 18px;
-      border: 1px solid rgba(148,163,184,0.16);
-      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.96));
-      padding: 18px;
+    .holiday-banner{
+      margin-bottom:12px;
+      padding:12px 14px;
+      border-radius:16px;
+      background:rgba(230,81,81,.1);
+      color:#a83b3b;
+      border:1px solid rgba(230,81,81,.16);
+      line-height:1.6;
+      font-size:.95rem;
     }
 
-    .agenda-card-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      align-items: flex-start;
-      margin-bottom: 14px;
+    .agenda-list{
+      display:grid;
+      gap:12px;
     }
 
-    .agenda-category {
-      margin: 0 0 6px;
-      color: var(--primary);
-      font-size: 0.82rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+    .agenda-card{
+      border-radius:20px;
+      border:1px solid rgba(255,255,255,.45);
+      background:linear-gradient(135deg, rgba(249,250,248,.5), rgba(224,229,220,.3));
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.42);
+      padding:16px;
     }
 
-    .agenda-title {
-      margin: 0;
-      font-size: 1.14rem;
-      line-height: 1.4;
+    .agenda-card-top{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+      margin-bottom:12px;
     }
 
-    .agenda-status {
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: rgba(15,118,110,0.12);
-      color: var(--agenda);
-      font-size: 0.78rem;
-      font-weight: 800;
-      text-align: center;
-      min-width: 110px;
+    .agenda-category{
+      margin:0 0 6px;
+      color:#57734a;
+      font-size:.8rem;
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.08em;
     }
 
-    .agenda-meta-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 14px;
+    .agenda-title{
+      margin:0;
+      font-size:1.12rem;
+      line-height:1.45;
+      color:var(--text);
     }
 
-    .agenda-meta-grid div {
-      border-radius: 14px;
-      background: rgba(241,245,249,0.86);
-      padding: 12px;
+    .agenda-status{
+      border-radius:999px;
+      padding:8px 10px;
+      background:linear-gradient(135deg, rgba(186,222,58,.35), rgba(106,196,90,.18));
+      border:1px solid rgba(255,255,255,.42);
+      font-size:.78rem;
+      font-weight:900;
+      text-align:center;
+      min-width:110px;
     }
 
-    .agenda-meta-grid span {
-      display: block;
-      color: var(--muted);
-      font-size: 0.8rem;
-      margin-bottom: 5px;
+    .agenda-meta-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0,1fr));
+      gap:10px;
+      margin-bottom:12px;
     }
 
-    .agenda-meta-grid strong {
-      display: block;
-      line-height: 1.5;
+    .agenda-meta-grid div{
+      border-radius:16px;
+      background:rgba(255,255,255,.22);
+      border:1px solid rgba(255,255,255,.36);
+      padding:12px;
     }
 
-    .agenda-description {
-      margin: 0 0 14px;
-      color: var(--muted);
-      line-height: 1.72;
+    .agenda-meta-grid span{
+      display:block;
+      color:var(--muted);
+      font-size:.78rem;
+      margin-bottom:6px;
+      font-weight:700;
     }
 
-    .agenda-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 14px;
+    .agenda-meta-grid strong{
+      display:block;
+      line-height:1.55;
+      color:var(--text);
     }
 
-    .agenda-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 10px;
-      border-radius: 999px;
-      background: rgba(37,99,235,0.08);
-      color: var(--primary);
-      font-size: 0.82rem;
-      font-weight: 700;
+    .agenda-description{
+      margin:0 0 12px;
+      color:var(--muted);
+      line-height:1.72;
     }
 
-    .agenda-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
+    .agenda-tags{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:12px;
     }
 
-    .agenda-links a {
-      text-decoration: none;
-      padding: 10px 14px;
-      border-radius: 999px;
-      background: var(--text);
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.9rem;
+    .agenda-tag{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      border-radius:999px;
+      padding:8px 10px;
+      background:rgba(255,255,255,.24);
+      border:1px solid rgba(255,255,255,.36);
+      color:var(--text);
+      font-size:.82rem;
+      font-weight:800;
     }
 
-    .agenda-footer {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      gap: 8px 14px;
-      color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.55;
-      padding-top: 10px;
-      border-top: 1px solid rgba(148,163,184,0.14);
+    .agenda-links{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
     }
 
-    .empty-state {
-      border-radius: 18px;
-      border: 1px dashed rgba(148,163,184,0.3);
-      padding: 18px;
-      background: rgba(255,255,255,0.66);
+    .agenda-links a{
+      text-decoration:none;
+      padding:10px 14px;
+      border-radius:999px;
+      background:linear-gradient(135deg, rgba(106,196,90,.92), rgba(186,222,58,.82));
+      color:#20351b;
+      font-weight:900;
+      box-shadow:0 8px 16px rgba(106,196,90,.18);
     }
 
-    .empty-state strong { display: block; margin-bottom: 6px; }
-    .empty-state p { margin: 0; color: var(--muted); line-height: 1.65; }
-    .hidden { display: none !important; }
-
-    @media (max-width: 960px) {
-      .hero, .layout { grid-template-columns: 1fr; }
-      .detail-header { flex-direction: column; }
+    .agenda-footer{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:.84rem;
+      padding-top:8px;
+      border-top:1px solid rgba(255,255,255,.34);
     }
 
-    @media (max-width: 640px) {
-      .page-shell { width: min(100% - 18px, var(--maxw)); }
-      .hero, .panel { border-radius: 20px; }
-      .hero { padding: 20px; }
-      .panel { padding: 16px; }
-      .toolbar, .calendar-nav { flex-wrap: wrap; }
-      .calendar-title-wrap { order: -1; width: 100%; }
-      .calendar-nav-actions { width: 100%; justify-content: space-between; }
-      .hero-stats { grid-template-columns: 1fr 1fr; }
-      .calendar-head, .calendar-grid { gap: 6px; }
-      .calendar-cell {
-        min-height: 108px;
-        border-radius: 16px;
-        padding: 10px;
+    .empty-state{
+      padding:16px;
+      border-radius:18px;
+      background:rgba(255,255,255,.18);
+      border:1px solid rgba(255,255,255,.32);
+      color:var(--muted);
+      line-height:1.7;
+      text-align:center;
+    }
+
+    @media (max-width: 720px){
+      .page-shell{
+        width:min(100% - 14px, 780px);
+        padding:10px;
+        margin:10px auto 26px;
       }
-      .calendar-day-number {
-        width: 30px;
-        height: 30px;
-        font-size: 0.95rem;
-      }
-      .calendar-holiday-name,
-      .calendar-agenda-preview,
-      .marker-text,
-      .flag { font-size: 0.72rem; }
-      .agenda-meta-grid { grid-template-columns: 1fr; }
-      .agenda-card-top { flex-direction: column; }
-      .agenda-status { min-width: 0; align-self: flex-start; }
+      .page-shell::before{transform:translate(7px,7px)}
+      .page-shell::after{transform:translate(14px,14px)}
+      .app-card{padding:22px 14px 18px}
+      .month-title-wrap h2{font-size:1.7rem}
+      .month-controls{grid-template-columns:70px minmax(0,1fr) 70px}
+      .nav-btn{min-width:70px}
+      .stats-strip,
+      .agenda-meta-grid,
+      .search-row{grid-template-columns:1fr}
+      .ghost-btn,.secondary-btn{min-height:58px}
+      .calendar-head div{font-size:.86rem}
+      .calendar-cell{min-height:66px;padding:8px 4px 16px}
+      .calendar-day-number{width:30px;height:30px;font-size:1rem}
+      .detail-header,
+      .agenda-card-top,
+      .agenda-footer{flex-direction:column}
+      .selected-badge{white-space:normal}
     }
   </style>
 </head>
 <body>
   <div class="page-shell">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">GitHub Pages • Spreadsheet Driven</p>
-        <h1>Agenda Kegiatan Mahasiswa</h1>
-        <p class="hero-text">Kalender bulanan dengan pencarian cepat, tanggal merah nasional, penanda tanggal yang memiliki agenda, dan detail kegiatan yang muncul di bawah kalender saat tanggal dipilih.</p>
-      </div>
-      <div class="hero-stats">
-        <div class="stat-card">
-          <span class="stat-label">Jumlah agenda</span>
-          <strong id="agendaCount">0</strong>
+    <div class="app-card">
+      <header class="app-header">
+        <p class="eyebrow">Spreadsheet-Based Calendar</p>
+        <h1>Agenda Mahasiswa</h1>
+        <p class="subtitle">Kalender agenda kegiatan mahasiswa dengan tampilan glassmorphism hijau lembut, lengkap dengan pencarian, tanggal merah, dan detail kegiatan per tanggal.</p>
+        <div class="stats-strip">
+          <div class="stat-chip">
+            <span>Total agenda</span>
+            <strong id="agendaCount">0</strong>
+          </div>
+          <div class="stat-chip">
+            <span>Bulan aktif</span>
+            <strong id="activeMonthLabel">-</strong>
+          </div>
         </div>
-        <div class="stat-card">
-          <span class="stat-label">Bulan aktif</span>
-          <strong id="activeMonthLabel">-</strong>
-        </div>
-      </div>
-    </header>
+      </header>
 
-    <main class="layout">
-      <section class="panel calendar-panel">
-        <div class="config-tip" id="configTip">
-          Tempel URL Google Spreadsheet Anda pada bagian <code>CONFIG.spreadsheetUrl</code> di dalam file ini. Format terbaik adalah link <strong>Publish to web → CSV</strong> atau link Google Sheet publik. Sheet data utama menggunakan nama <code>Agenda_Kegiatan</code>.
-        </div>
+      <div class="config-tip hidden" id="configTip">
+        Data masih belum terhubung. Pastikan URL ada pada <code>CONFIG.spreadsheetUrl</code>.
+      </div>
 
-        <div class="toolbar toolbar-top">
+      <section class="search-panel">
+        <label class="field-label" for="searchInput">Menu Pencarian</label>
+        <div class="search-row">
           <label class="search-wrap" for="searchInput">
             <span class="search-icon">⌕</span>
-            <input id="searchInput" type="search" placeholder="Cari judul, kategori, lokasi, penyelenggara, target peserta...">
+            <input id="searchInput" type="search" placeholder="Cari judul, kategori, lokasi, penyelenggara, atau target peserta">
           </label>
           <button id="resetSearchBtn" class="ghost-btn" type="button">Reset</button>
         </div>
+      </section>
 
-        <div class="toolbar calendar-nav">
-          <button id="prevMonthBtn" class="nav-btn" type="button" aria-label="Bulan sebelumnya">‹</button>
-          <div class="calendar-title-wrap">
-            <h2 id="monthTitle">Kalender</h2>
-            <p id="calendarHint">Memuat data agenda...</p>
+      <section class="calendar-panel">
+        <div class="month-card">
+          <div class="month-head">
+            <div class="month-icon">📅</div>
+            <div class="month-title-wrap">
+              <h2 id="monthTitle">Kalender</h2>
+              <p id="calendarHint">Memuat data agenda...</p>
+            </div>
           </div>
-          <div class="calendar-nav-actions">
+
+          <div class="month-controls">
+            <button id="prevMonthBtn" class="nav-btn" type="button" aria-label="Bulan sebelumnya">‹</button>
             <button id="todayBtn" class="secondary-btn" type="button">Hari ini</button>
             <button id="nextMonthBtn" class="nav-btn" type="button" aria-label="Bulan berikutnya">›</button>
           </div>
-        </div>
 
-        <div class="legend">
-          <span><i class="legend-dot today-dot"></i>Hari ini</span>
-          <span><i class="legend-dot agenda-dot"></i>Ada agenda</span>
-          <span><i class="legend-dot holiday-dot"></i>Tanggal merah</span>
-        </div>
+          <div class="legend">
+            <span><i class="legend-dot today-dot"></i>Hari ini</span>
+            <span><i class="legend-dot agenda-dot"></i>Ada agenda</span>
+            <span><i class="legend-dot holiday-dot"></i>Tanggal merah</span>
+          </div>
 
-        <div class="calendar-head" id="calendarHead"></div>
-        <div class="calendar-grid" id="calendarGrid"></div>
+          <div class="calendar-head" id="calendarHead"></div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+        </div>
       </section>
 
-      <section class="panel detail-panel">
+      <section class="detail-panel">
         <div class="detail-header">
           <div>
             <p class="eyebrow">Detail tanggal terpilih</p>
@@ -669,7 +767,7 @@
         <div id="holidayBanner" class="holiday-banner hidden"></div>
         <div id="agendaList" class="agenda-list"></div>
       </section>
-    </main>
+    </div>
   </div>
 
   <template id="agendaCardTemplate">
@@ -705,6 +803,7 @@
   </template>
 
   <script>
+
     const CONFIG = {
       spreadsheetUrl: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ2ZZEAnDNqv4szhclwE9n5aRbF7d4IFiOdrrex8ZIlyE7hkzjh0JiC3jlW-_Uu8A/pub?gid=186972263&single=true&output=csv",
       sheetName: "Agenda_Kegiatan",
@@ -1296,6 +1395,7 @@
     }
 
     init();
+  
   </script>
 </body>
 </html>
